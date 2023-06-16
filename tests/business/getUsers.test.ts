@@ -1,3 +1,4 @@
+import { ZodError } from "zod"
 import { UserBusiness } from "../../src/business/UserBusiness"
 import { GetUsersSchema } from "../../src/dtos/user/getUsers.dto"
 import { USER_ROLES } from "../../src/models/User"
@@ -30,4 +31,36 @@ describe("Testando getUsers", () => {
       role: USER_ROLES.ADMIN
     })
   })
+
+  test("Error - Token com uma string vazia", async () => {
+    expect.assertions(1)
+    try {
+      const input = GetUsersSchema.parse({
+        token: ""
+      })
+  
+      await userBusiness.getUsers(input)
+    } catch (error) {
+      if(error instanceof ZodError) {
+        expect(error.issues[0].message).toBe('String must contain at least 1 character(s)')
+      }
+    }
+})
+
+test("Error - Token com valor booleano", async () => {
+  expect.assertions(1)
+  try {
+    const input = GetUsersSchema.parse({
+      token: true
+    })
+
+    await userBusiness.getUsers(input)
+  } catch (error) {
+    if(error instanceof ZodError) {
+      expect(error.issues[0].message).toBe('Expected string, received boolean')
+    }
+  }
+})
+
+
 })
